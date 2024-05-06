@@ -1,95 +1,100 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { useState, useEffect } from "react";
+import { Box, Button, Text, Center, Progress } from "@chakra-ui/react";
 
-export default function Home() {
+const Home: React.FC = () => {
+  const [workTime, setWorkTime] = useState<number>(25 * 60);
+  const [breakTime, setBreakTime] = useState<number>(5 * 60);
+  const [isWorking, setIsWorking] = useState<boolean>(true);
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [counter, setCounter] = useState<number>(0);
+  const totalTime = isWorking ? 25 * 60 : 5 * 60;
+  const progress =
+    ((totalTime - (isWorking ? workTime : breakTime)) / totalTime) * 100;
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isActive && isWorking && workTime > 0) {
+      interval = setInterval(() => {
+        setWorkTime((prev) => prev - 1);
+      }, 1000);
+    } else if (isActive && !isWorking && breakTime > 0) {
+      interval = setInterval(() => {
+        setBreakTime((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isActive, isWorking, workTime, breakTime]);
+
+  const handleStartPause = () => {
+    setIsActive((prev) => !prev);
+  };
+
+  const handleReset = () => {
+    setWorkTime(25 * 60);
+    setBreakTime(5 * 60);
+    setIsActive(false);
+    setIsWorking(true);
+  };
+
+  const formatTime = (time: number): string => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const toggleMode = () => {
+    if (isWorking) {
+      setCounter((prev) => prev + 1);
+    }
+    setIsWorking((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (workTime === 0) {
+      toggleMode();
+      setWorkTime(25 * 60);
+    }
+  }, [workTime]);
+
+  useEffect(() => {
+    if (breakTime === 0) {
+      toggleMode();
+      setBreakTime(5 * 60);
+    }
+  }, [breakTime]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <Center h="100vh">
+      <Box textAlign="center">
+        <Text className="flashing" fontSize="6xl">
+          Pomodoro 番茄鐘
+        </Text>
+        <Text fontSize="4xl">
+          {isWorking ? "Work Timer 工作時間" : "Break Timer 休息時間"}
+        </Text>
+        <Text fontSize="3xl">
+          {formatTime(isWorking ? workTime : breakTime)}
+        </Text>
+        <Box mt={4} mb={4}>
+          <Progress value={progress} />
+        </Box>
+        <Button colorScheme="blue" onClick={handleStartPause}>
+          {isActive ? "Pause 暫停" : "Start 開始"}
+        </Button>
+        <Button colorScheme="red" onClick={handleReset} ml={2}>
+          Reset 重置
+        </Button>
+        <Text fontSize="xl" mt={4}>
+          Cycle 回合: {counter}
+        </Text>
+      </Box>
+    </Center>
   );
-}
+};
+
+export default Home;

@@ -8,8 +8,8 @@ const Home: React.FC = () => {
   const [isWorking, setIsWorking] = useState<boolean>(true);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [counter, setCounter] = useState<number>(0);
-  const totalTime = isWorking ? 25 * 60 : 5 * 60;
-  const progress =
+  const totalTime: number = isWorking ? 25 * 60 : 5 * 60;
+  const progress: number =
     ((totalTime - (isWorking ? workTime : breakTime)) / totalTime) * 100;
 
   useEffect(() => {
@@ -28,11 +28,11 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, [isActive, isWorking, workTime, breakTime]);
 
-  const handleStartPause = () => {
+  const handleStartPause: React.MouseEventHandler<HTMLButtonElement> = () => {
     setIsActive((prev) => !prev);
   };
 
-  const handleReset = () => {
+  const handleReset: React.MouseEventHandler<HTMLButtonElement> = () => {
     setWorkTime(25 * 60);
     setBreakTime(5 * 60);
     setIsActive(false);
